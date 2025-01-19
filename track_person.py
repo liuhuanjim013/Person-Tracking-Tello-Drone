@@ -52,35 +52,41 @@ def controller_thread():
     try:
         while run_controller_thread:
             time.sleep(.05)
+            # Listen for key events
+            event = keyboard.read_event(suppress=True)
+            if event.event_type == keyboard.KEY_DOWN:
+                last_pressed_key = event.name
+                print('Last pressed key: %s'%last_pressed_key)
             # takeoff
-            if keyboard.is_pressed('space'):
+            if last_pressed_key == 'space':
                 drone.takeoff()
             # land
-            elif keyboard.is_pressed('l'):
+            elif last_pressed_key == 'l':
                 drone.land()
                 control_on = False #disable control
-                shutdown = True
-
-            elif keyboard.is_pressed('q'):
+            elif last_pressed_key == 'q':
                 drone.counter_clockwise(40)
-            elif keyboard.is_pressed('e'):
+            elif last_pressed_key == 'e':
                 drone.clockwise(40)
-            elif keyboard.is_pressed('d'):
+            elif last_pressed_key == 'd':
                 drone.right(40)
-            elif keyboard.is_pressed('a'):
+            elif last_pressed_key == 'a':
                 drone.left(40)
-            elif keyboard.is_pressed('w'):
+            elif last_pressed_key == 'w':
                 drone.forward(40)
-            elif keyboard.is_pressed('s'):
+            elif last_pressed_key == 's':
                 drone.backward(40)
-            elif keyboard.is_pressed('r'):
+            elif last_pressed_key == 'r':
                 drone.clockwise(0)
                 drone.forward(0)
                 drone.left(0)
-            elif keyboard.is_pressed('t'): #toggle controls
-                control_on = False
-            elif keyboard.is_pressed('esc'):
+            elif last_pressed_key == 't': #toggle controls
+                control_on = not control_on
+                print('control_on=%r'%control_on)
+                time.sleep(.5)
+            elif last_pressed_key == 'esc':
                 drone.land()
+                shutdown=True
                 break
 
             #set commands based on PID output
@@ -111,6 +117,8 @@ def controller_thread():
         print(e)
     finally:
         run_controller_thread = False
+        print('finish controller_thread()')
+
 
 def handler(event, sender, data, **args):
     global prev_flight_data
@@ -156,6 +164,8 @@ def main():
                     # skip first 300 frames
                     if frame_count < 300:
                         continue
+                    if shutdown:
+                        break
                     if frame_count %4 == 0:
                         im = numpy.array(frame.to_image())
                         im = cv2.resize(im, (320,240)) #resize frame
