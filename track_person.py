@@ -168,11 +168,11 @@ def main():
                         break
                     if frame_count %4 == 0:
                         im = numpy.array(frame.to_image())
-                        im = cv2.resize(im, (320,240)) #resize frame
+                        im = cv2.resize(im, (513,513)) #resize frame
                         image = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
                         #image = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
                         input_image, display_image, output_scale = posenet.process_input(
-                            image, scale_factor=args.scale_factor, output_stride=output_stride)
+                            image, output_stride=output_stride)
 
                         heatmaps_result, offsets_result, displacement_fwd_result, displacement_bwd_result = sess.run(
                             model_outputs,
